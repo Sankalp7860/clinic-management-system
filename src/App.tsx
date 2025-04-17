@@ -18,6 +18,7 @@ import AuthService from "@/services/auth.service";
 import Profile from "@/pages/patient/Profile";
 import Appointments from "@/pages/patient/Appointments";
 import DoctorAppointments from "./pages/doctor/AppointmentsList";
+import DoctorProfile from "@/pages/doctor/Profile";
 
 // Protected route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -94,6 +95,15 @@ function App() {
 					element={
 						<ProtectedRoute allowedRoles={["doctor"]}>
 							<DoctorAppointments />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/doctor/profile"
+					element={
+						<ProtectedRoute allowedRoles={["doctor"]}>
+							<DoctorProfile />
 						</ProtectedRoute>
 					}
 				/>
