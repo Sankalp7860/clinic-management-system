@@ -6,7 +6,8 @@ const {
   getVerifiedDoctors,
   getUnverifiedDoctors,
   updateUser,
-  verifyDoctor
+  verifyDoctor,
+  deleteUser
 } = require('../controllers/user.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
@@ -31,6 +32,7 @@ router.route('/doctors/:id/verify')
 
 router.route('/:id')
   .get(getUser)
-  .put(updateUser);
+  .put(updateUser)
+  .delete(authorize('admin'), deleteUser); // Add delete endpoint
 
 module.exports = router;

@@ -47,6 +47,12 @@ const UserService = {
   verifyDoctor: async (id: string) => {
     const response = await api.put(`/users/doctors/${id}/verify`);
     return response.data;
+  },
+  
+  // Delete a user (admin only)
+  deleteUser: async (id: string) => {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
   }
 };
 

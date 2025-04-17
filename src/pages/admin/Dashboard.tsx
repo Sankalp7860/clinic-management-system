@@ -111,13 +111,11 @@ const AdminDashboard = () => {
           description: "Doctor verified successfully",
         });
       } else {
-        // In a real app, you might want to have a separate endpoint for rejections
-        // For now, we'll just delete the user account
-        // This is a simplified approach
-        await UserService.updateUser(doctorId, { isVerified: false, isRejected: true });
+        // Delete the doctor from the database instead of just updating
+        await UserService.deleteUser(doctorId);
         toast({
           title: "Success",
-          description: "Doctor application rejected",
+          description: "Doctor application rejected and removed from the system",
         });
       }
       
