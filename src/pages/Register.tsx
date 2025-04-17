@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Hospital, ArrowLeft } from "lucide-react";
+import AuthService from "@/services/auth.service";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -71,6 +72,7 @@ const Register = () => {
   };
 
   // Handle patient registration
+  // Update handlePatientSubmit
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -82,29 +84,23 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // This would connect to your backend API
-      // const response = await fetch('http://localhost:8000/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...patientData, role: 'patient' }),
-      // });
+      await AuthService.register({
+        ...patientData,
+        role: 'patient'
+      });
       
-      // const data = await response.json();
-      
-      // For now, simulate successful registration
-      setTimeout(() => {
-        setIsLoading(false);
-        toast.success("Registration successful! You can now login.");
-        navigate("/login");
-      }, 1000);
-    } catch (error) {
-      setIsLoading(false);
-      toast.error("Registration failed. Please try again.");
+      toast.success("Registration successful! You can now login.");
+      navigate("/login");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
       console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // Handle doctor registration
+  // Update handleDoctorSubmit
   const handleDoctorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -116,25 +112,18 @@ const Register = () => {
     setIsLoading(true);
     
     try {
-      // This would connect to your backend API
-      // const response = await fetch('http://localhost:8000/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...doctorData, role: 'doctor', isVerified: false }),
-      // });
+      await AuthService.register({
+        ...doctorData,
+        role: 'doctor'
+      });
       
-      // const data = await response.json();
-      
-      // For now, simulate successful registration
-      setTimeout(() => {
-        setIsLoading(false);
-        toast.success("Registration submitted! Administrator will verify your account.");
-        navigate("/login");
-      }, 1000);
-    } catch (error) {
-      setIsLoading(false);
-      toast.error("Registration failed. Please try again.");
+      toast.success("Registration submitted! Administrator will verify your account.");
+      navigate("/login");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
       console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

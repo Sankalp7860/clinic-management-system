@@ -1,55 +1,85 @@
 
 import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import PatientDashboard from "./pages/patient/Dashboard";
-import DoctorDashboard from "./pages/doctor/Dashboard";
-import AdminDashboard from "./pages/admin/Dashboard";
-import BookAppointment from "./pages/patient/BookAppointment";
-import AppointmentsList from "./pages/patient/AppointmentsList";
-import DoctorAppointments from "./pages/doctor/AppointmentsList";
-import AdminDoctorVerification from "./pages/admin/DoctorVerification";
-import NotFound from "./pages/NotFound";
+import Index from "@/pages/Index";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import NotFound from "@/pages/NotFound";
+import PatientDashboard from "@/pages/patient/Dashboard";
+import BookAppointment from "@/pages/patient/BookAppointment";
+import DoctorDashboard from "@/pages/doctor/Dashboard";
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AuthService from "@/services/auth.service";
 
-const queryClient = new QueryClient();
+// Protected route component
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const currentUser = AuthService.getCurrentUser();
+  
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
+};
 
-const App: React.FC = () => (
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            {/* Patient Routes */}
-            <Route path="/patient/dashboard" element={<PatientDashboard />} />
-            <Route path="/patient/book-appointment" element={<BookAppointment />} />
-            <Route path="/patient/appointments" element={<AppointmentsList />} />
-            
-            {/* Doctor Routes */}
-            <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-            <Route path="/doctor/appointments" element={<DoctorAppointments />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/verify-doctors" element={<AdminDoctorVerification />} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </React.StrictMode>
-);
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Patient routes */}
+        <Route 
+          path="/patient/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["patient"]}>
+              <PatientDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/patient/book-appointment" 
+          element={
+            <ProtectedRoute allowedRoles={["patient"]}>
+              <BookAppointment />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Doctor routes */}
+        <Route 
+          path="/doctor/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Admin routes */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Catch all */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
+    </Router>
+  );
+}
 
 export default App;
