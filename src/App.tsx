@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,35 +19,37 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          {/* Patient Routes */}
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/book-appointment" element={<BookAppointment />} />
-          <Route path="/patient/appointments" element={<AppointmentsList />} />
-          
-          {/* Doctor Routes */}
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-          <Route path="/doctor/appointments" element={<DoctorAppointments />} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/verify-doctors" element={<AdminDoctorVerification />} />
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+const App: React.FC = () => (
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            
+            {/* Patient Routes */}
+            <Route path="/patient/dashboard" element={<PatientDashboard />} />
+            <Route path="/patient/book-appointment" element={<BookAppointment />} />
+            <Route path="/patient/appointments" element={<AppointmentsList />} />
+            
+            {/* Doctor Routes */}
+            <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+            <Route path="/doctor/appointments" element={<DoctorAppointments />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/verify-doctors" element={<AdminDoctorVerification />} />
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;
