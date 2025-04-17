@@ -119,31 +119,20 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Add to existing controller
-exports.verifyDoctor = async (req, res) => {
+// @desc    Get verified doctors
+// @route   GET /api/users/doctors/verified
+// @access  Private
+exports.getVerifiedDoctors = async (req, res) => {
   try {
-    const doctor = await User.findById(req.params.id);
-
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-        message: 'Doctor not found'
-      });
-    }
-
-    if (doctor.role !== 'doctor') {
-      return res.status(400).json({
-        success: false,
-        message: 'User is not a doctor'
-      });
-    }
-
-    doctor.isVerified = true;
-    await doctor.save();
+    const doctors = await User.find({ 
+      role: 'doctor',
+      isVerified: true 
+    });
 
     res.status(200).json({
       success: true,
-      data: doctor
+      count: doctors.length,
+      data: doctors
     });
   } catch (error) {
     res.status(500).json({
@@ -153,14 +142,56 @@ exports.verifyDoctor = async (req, res) => {
   }
 };
 
+// @desc    Get unverified doctors
+// @route   GET /api/users/doctors/unverified
+// @access  Private/Admin
 exports.getUnverifiedDoctors = async (req, res) => {
   try {
-    const doctors = await User.find({ role: 'doctor', isVerified: false });
+    const doctors = await User.find({ 
+      role: 'doctor',
+      isVerified: false 
+    });
 
     res.status(200).json({
       success: true,
       count: doctors.length,
       data: doctors
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Verify a doctor
+// @route   PUT /api/users/doctors/:id/verify
+// @access  Private/Admin
+exports.verifyDoctor = async (req, res) => {
+  try {
+    const doctor = await User.findById(req.params.id);
+
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: `No doctor found with id ${req.params.id}`
+      });
+    }
+
+    if (doctor.role !== 'doctor') {
+      return res.status(400).json({
+        success: false,
+        message: 'This user is not a doctor'
+      });
+    }
+
+    doctor.isVerified = true;
+    await doctor.save();
+
+    res.status(200).json({
+      success: true,
+      data: doctor
     });
   } catch (error) {
     res.status(500).json({

@@ -114,7 +114,8 @@ const Register = () => {
     try {
       await AuthService.register({
         ...doctorData,
-        role: 'doctor'
+        role: 'doctor',
+        isVerified: false // Explicitly set to false, though backend should handle this
       });
       
       toast.success("Registration submitted! Administrator will verify your account.");

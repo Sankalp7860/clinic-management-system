@@ -3,9 +3,10 @@ const {
   getUsers,
   getUser,
   getDoctors,
+  getVerifiedDoctors,
+  getUnverifiedDoctors,
   updateUser,
-  getUnverifiedDoctors,  // Add this import
-  verifyDoctor          // Add this import
+  verifyDoctor
 } = require('../controllers/user.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
@@ -19,11 +20,17 @@ router.route('/')
 router.route('/doctors')
   .get(getDoctors);
 
+router.route('/doctors/verified')
+  .get(getVerifiedDoctors);
+
+router.route('/doctors/unverified')
+  .get(authorize('admin'), getUnverifiedDoctors);
+
+router.route('/doctors/:id/verify')
+  .put(authorize('admin'), verifyDoctor);
+
 router.route('/:id')
   .get(getUser)
   .put(updateUser);
-
-router.get('/doctors/unverified', authorize('admin'), getUnverifiedDoctors);
-router.put('/doctors/:id/verify', authorize('admin'), verifyDoctor);
 
 module.exports = router;
