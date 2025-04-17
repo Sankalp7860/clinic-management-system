@@ -322,12 +322,183 @@ const DoctorAppointments = () => {
                   )}
                 </TabsContent>
                 
-                {/* Similar updates for other tabs (upcoming, completed, cancelled) */}
-                {/* Make sure to update all references from appointment.id to appointment._id */}
-                {/* And from appointment.patient to appointment.patient.name */}
-                {/* And update the handleUpdateStatus calls to use appointment._id */}
+                {/* Upcoming appointments tab */}
+                <TabsContent value="upcoming" className="space-y-4 mt-4">
+                  {upcomingAppointments.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      No upcoming appointments found
+                    </div>
+                  ) : (
+                    upcomingAppointments.map((appointment) => (
+                      <div 
+                        key={appointment._id} 
+                        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
+                      >
+                        <div className="flex gap-4 items-start">
+                          <div className="p-2 rounded-full bg-blue-100">
+                            <Clock className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-sm">
+                                {new Date(appointment.date).toLocaleDateString()}
+                              </span>
+                              <Clock className="h-3 w-3 text-muted-foreground ml-2" />
+                              <span className="text-sm">{appointment.time}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
+                                Upcoming
+                              </span>
+                            </div>
+                            {appointment.reason && (
+                              <p className="text-sm mt-2">
+                                <span className="font-medium">Reason:</span> {appointment.reason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3 md:mt-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
+                          >
+                            View Patient
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-green-600 border-green-200 hover:bg-green-50"
+                            onClick={() => handleUpdateStatus(appointment._id, "completed")}
+                          >
+                            Mark Completed
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="text-red-600 border-red-200 hover:bg-red-50"
+                            onClick={() => handleUpdateStatus(appointment._id, "cancelled")}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </TabsContent>
                 
-                {/* For brevity, I'm not including all tabs here, but you should update them all similarly */}
+                {/* Completed appointments tab */}
+                <TabsContent value="completed" className="space-y-4 mt-4">
+                  {completedAppointments.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      No completed appointments found
+                    </div>
+                  ) : (
+                    completedAppointments.map((appointment) => (
+                      <div 
+                        key={appointment._id} 
+                        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
+                      >
+                        <div className="flex gap-4 items-start">
+                          <div className="p-2 rounded-full bg-green-100">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-sm">
+                                {new Date(appointment.date).toLocaleDateString()}
+                              </span>
+                              <Clock className="h-3 w-3 text-muted-foreground ml-2" />
+                              <span className="text-sm">{appointment.time}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+                                Completed
+                              </span>
+                            </div>
+                            {appointment.reason && (
+                              <p className="text-sm mt-2">
+                                <span className="font-medium">Reason:</span> {appointment.reason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3 md:mt-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
+                          >
+                            View Patient
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </TabsContent>
+                
+                {/* Cancelled appointments tab */}
+                <TabsContent value="cancelled" className="space-y-4 mt-4">
+                  {cancelledAppointments.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      No cancelled appointments found
+                    </div>
+                  ) : (
+                    cancelledAppointments.map((appointment) => (
+                      <div 
+                        key={appointment._id} 
+                        className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
+                      >
+                        <div className="flex gap-4 items-start">
+                          <div className="p-2 rounded-full bg-red-100">
+                            <X className="h-5 w-5 text-red-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Calendar className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-sm">
+                                {new Date(appointment.date).toLocaleDateString()}
+                              </span>
+                              <Clock className="h-3 w-3 text-muted-foreground ml-2" />
+                              <span className="text-sm">{appointment.time}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800">
+                                Cancelled
+                              </span>
+                            </div>
+                            {appointment.reason && (
+                              <p className="text-sm mt-2">
+                                <span className="font-medium">Reason:</span> {appointment.reason}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3 md:mt-0">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
+                          >
+                            View Patient
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </TabsContent>
               </Tabs>
             )}
           </CardContent>
