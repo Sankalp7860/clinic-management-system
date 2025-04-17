@@ -43,6 +43,12 @@ const UtilityRequestService = {
 
   // Update utility request status (admin only)
   updateUtilityRequestStatus: async (id: string, status: 'approved' | 'rejected', adminNotes?: string) => {
+    console.log("Sending update request with ID:", id); // Add this debug log
+    
+    if (!id) {
+      throw new Error("Request ID is undefined");
+    }
+    
     const response = await api.put(`/utility-requests/${id}`, { status, adminNotes });
     return response.data;
   },

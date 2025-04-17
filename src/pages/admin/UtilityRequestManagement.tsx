@@ -34,7 +34,15 @@ const UtilityRequestManagement = () => {
     try {
       setLoading(true);
       const response = await UtilityRequestService.getUtilityRequests();
-      setRequests(response.data);
+      console.log("Utility requests response:", response); // Add this debug log
+      
+      // Make sure we're mapping the MongoDB _id to id if needed
+      const formattedRequests = response.data.map(req => ({
+        ...req,
+        id: req.id || req._id // Ensure we have an id property
+      }));
+      
+      setRequests(formattedRequests);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching utility requests:", error);
@@ -43,8 +51,11 @@ const UtilityRequestManagement = () => {
     }
   };
 
+  // In the handleApproveRequest function, add debugging and ensure we're using the correct ID
   const handleApproveRequest = async () => {
     if (!selectedRequest) return;
+    
+    console.log("Approving request with ID:", selectedRequest.id); // Add this debug log
     
     try {
       setActionLoading(true);
@@ -274,6 +285,7 @@ const UtilityRequestManagement = () => {
                                 size="sm"
                                 className="text-green-600 border-green-200 hover:bg-green-50"
                                 onClick={() => {
+                                  console.log("Selected request:", request); // Add this debug log
                                   setSelectedRequest(request);
                                   setApproveDialogOpen(true);
                                 }}
