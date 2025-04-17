@@ -11,12 +11,18 @@ import { Calendar, Clock, Search, CheckCircle, X, Calendar as CalendarIcon } fro
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import AppointmentService from "@/services/appointment.service";
+import AuthService from "@/services/auth.service";
+import { useNavigate } from "react-router-dom";
 
 interface Appointment {
-  id: string;
-  patient: string;
-  patientAge?: string;
-  patientGender?: string;
+  _id: string;
+  patient: {
+    _id: string;
+    name: string;
+    age?: string;
+    gender?: string;
+  };
   date: string;
   time: string;
   status: "upcoming" | "completed" | "cancelled";
@@ -24,6 +30,7 @@ interface Appointment {
 }
 
 const DoctorAppointments = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
@@ -31,128 +38,53 @@ const DoctorAppointments = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
-    // Simulate fetching appointments from backend
     const fetchAppointments = async () => {
       try {
-        // This would connect to your backend API
-        // const response = await fetch('http://localhost:8000/api/doctor/appointments');
-        // const data = await response.json();
-        
-        // Mock data for demonstration
-        const today = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const mockAppointments: Appointment[] = [
-          {
-            id: "1",
-            patient: "John Smith",
-            patientAge: "45",
-            patientGender: "Male",
-            date: today.toISOString().split('T')[0],
-            time: "10:00 AM",
-            status: "upcoming",
-            reason: "Annual checkup"
-          },
-          {
-            id: "2",
-            patient: "Alice Johnson",
-            patientAge: "32",
-            patientGender: "Female",
-            date: today.toISOString().split('T')[0],
-            time: "11:30 AM",
-            status: "upcoming",
-            reason: "Follow-up consultation"
-          },
-          {
-            id: "3",
-            patient: "Bob Williams",
-            patientAge: "28",
-            patientGender: "Male",
-            date: today.toISOString().split('T')[0],
-            time: "02:00 PM",
-            status: "upcoming",
-            reason: "New consultation"
-          },
-          {
-            id: "4",
-            patient: "Emma Davis",
-            patientAge: "52",
-            patientGender: "Female",
-            date: tomorrow.toISOString().split('T')[0],
-            time: "09:30 AM",
-            status: "upcoming",
-            reason: "Routine checkup"
-          },
-          {
-            id: "5",
-            patient: "Michael Brown",
-            patientAge: "60",
-            patientGender: "Male",
-            date: tomorrow.toISOString().split('T')[0],
-            time: "01:00 PM",
-            status: "upcoming",
-            reason: "Discuss test results"
-          },
-          {
-            id: "6",
-            patient: "Sarah Miller",
-            patientAge: "36",
-            patientGender: "Female",
-            date: yesterday.toISOString().split('T')[0],
-            time: "10:15 AM",
-            status: "completed",
-            reason: "Initial consultation"
-          },
-          {
-            id: "7",
-            patient: "David Wilson",
-            patientAge: "42",
-            patientGender: "Male",
-            date: yesterday.toISOString().split('T')[0],
-            time: "03:45 PM",
-            status: "completed",
-            reason: "Follow-up after surgery"
-          },
-          {
-            id: "8",
-            patient: "Jennifer Lee",
-            patientAge: "29",
-            patientGender: "Female",
-            date: yesterday.toISOString().split('T')[0],
-            time: "09:00 AM",
-            status: "cancelled",
-            reason: "Consultation for headaches"
-          }
-        ];
-        
-        setAppointments(mockAppointments);
+        // Check if user is logged in
+        const currentUser = AuthService.getCurrentUser();
+        if (!currentUser) {
+          navigate("/login");
+          return;
+        }
+
+        // Check if user is a doctor
+        if (currentUser.role !== "doctor") {
+          navigate("/login");
+          return;
+        }
+
+        // Fetch appointments from backend for the logged-in doctor
+        const response = await AppointmentService.getAppointments();
+        setAppointments(response.data);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching appointments:", error);
+        toast.error("Failed to load appointments");
         setLoading(false);
       }
     };
     
     fetchAppointments();
-  }, []);
+  }, [navigate]);
 
   // Handle updating appointment status
-  const handleUpdateStatus = (id: string, newStatus: "completed" | "cancelled") => {
-    // This would connect to your backend API
-    // In a real app, you would make an API call to update the appointment status
-    
-    // For now, update locally
-    setAppointments(appointments.map(appointment => 
-      appointment.id === id 
-        ? { ...appointment, status: newStatus } 
-        : appointment
-    ));
-    
-    toast.success(`Appointment marked as ${newStatus}`);
+  const handleUpdateStatus = async (id: string, newStatus: "completed" | "cancelled") => {
+    try {
+      // Make API call to update the appointment status
+      await AppointmentService.updateAppointment(id, { status: newStatus });
+      
+      // Update local state
+      setAppointments(appointments.map(appointment => 
+        appointment._id === id 
+          ? { ...appointment, status: newStatus } 
+          : appointment
+      ));
+      
+      toast.success(`Appointment marked as ${newStatus}`);
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      toast.error("Failed to update appointment status");
+    }
   };
 
   // Filter appointments based on search query, date, status, and tab
@@ -172,7 +104,7 @@ const DoctorAppointments = () => {
           : appointment.status === statusFilter
       )
       .filter(appointment => 
-        appointment.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        appointment.patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (appointment.reason && appointment.reason.toLowerCase().includes(searchQuery.toLowerCase()))
       );
   };
@@ -188,6 +120,9 @@ const DoctorAppointments = () => {
     appointment => appointment.date === today && appointment.status === "upcoming"
   );
 
+  // Rest of your component remains the same, but update references to appointment.patient to appointment.patient.name
+  // and appointment.id to appointment._id
+
   return (
     <DashboardLayout userRole="doctor">
       <div className="space-y-6">
@@ -198,6 +133,7 @@ const DoctorAppointments = () => {
           </p>
         </div>
         
+        {/* Search and filter controls */}
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -210,6 +146,7 @@ const DoctorAppointments = () => {
             />
           </div>
           
+          {/* Date and status filters */}
           <div className="flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
@@ -264,6 +201,7 @@ const DoctorAppointments = () => {
           </div>
         </div>
         
+        {/* Appointments card */}
         <Card>
           <CardHeader>
             <CardTitle>All Appointments</CardTitle>
@@ -293,6 +231,7 @@ const DoctorAppointments = () => {
                   </TabsTrigger>
                 </TabsList>
                 
+                {/* All appointments tab */}
                 <TabsContent value="all" className="space-y-4 mt-4">
                   {allAppointments.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
@@ -301,7 +240,7 @@ const DoctorAppointments = () => {
                   ) : (
                     allAppointments.map((appointment) => (
                       <div 
-                        key={appointment.id} 
+                        key={appointment._id} 
                         className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
                       >
                         <div className="flex gap-4 items-start">
@@ -320,10 +259,10 @@ const DoctorAppointments = () => {
                             }
                           </div>
                           <div>
-                            <h3 className="font-medium">{appointment.patient}</h3>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
                             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                              {appointment.patientAge && <span>Age: {appointment.patientAge}</span>}
-                              {appointment.patientGender && <span>• Gender: {appointment.patientGender}</span>}
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -353,6 +292,7 @@ const DoctorAppointments = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
                           >
                             View Patient
                           </Button>
@@ -362,7 +302,7 @@ const DoctorAppointments = () => {
                                 variant="outline" 
                                 size="sm"
                                 className="text-green-600 border-green-200 hover:bg-green-50"
-                                onClick={() => handleUpdateStatus(appointment.id, "completed")}
+                                onClick={() => handleUpdateStatus(appointment._id, "completed")}
                               >
                                 Mark Completed
                               </Button>
@@ -370,7 +310,7 @@ const DoctorAppointments = () => {
                                 variant="outline" 
                                 size="sm"
                                 className="text-red-600 border-red-200 hover:bg-red-50"
-                                onClick={() => handleUpdateStatus(appointment.id, "cancelled")}
+                                onClick={() => handleUpdateStatus(appointment._id, "cancelled")}
                               >
                                 Cancel
                               </Button>
@@ -382,6 +322,7 @@ const DoctorAppointments = () => {
                   )}
                 </TabsContent>
                 
+                {/* Upcoming appointments tab */}
                 <TabsContent value="upcoming" className="space-y-4 mt-4">
                   {upcomingAppointments.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
@@ -390,7 +331,7 @@ const DoctorAppointments = () => {
                   ) : (
                     upcomingAppointments.map((appointment) => (
                       <div 
-                        key={appointment.id} 
+                        key={appointment._id} 
                         className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
                       >
                         <div className="flex gap-4 items-start">
@@ -398,10 +339,10 @@ const DoctorAppointments = () => {
                             <Clock className="h-5 w-5 text-blue-600" />
                           </div>
                           <div>
-                            <h3 className="font-medium">{appointment.patient}</h3>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
                             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                              {appointment.patientAge && <span>Age: {appointment.patientAge}</span>}
-                              {appointment.patientGender && <span>• Gender: {appointment.patientGender}</span>}
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -410,6 +351,9 @@ const DoctorAppointments = () => {
                               </span>
                               <Clock className="h-3 w-3 text-muted-foreground ml-2" />
                               <span className="text-sm">{appointment.time}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800">
+                                Upcoming
+                              </span>
                             </div>
                             {appointment.reason && (
                               <p className="text-sm mt-2">
@@ -422,6 +366,7 @@ const DoctorAppointments = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
                           >
                             View Patient
                           </Button>
@@ -429,7 +374,7 @@ const DoctorAppointments = () => {
                             variant="outline" 
                             size="sm"
                             className="text-green-600 border-green-200 hover:bg-green-50"
-                            onClick={() => handleUpdateStatus(appointment.id, "completed")}
+                            onClick={() => handleUpdateStatus(appointment._id, "completed")}
                           >
                             Mark Completed
                           </Button>
@@ -437,7 +382,7 @@ const DoctorAppointments = () => {
                             variant="outline" 
                             size="sm"
                             className="text-red-600 border-red-200 hover:bg-red-50"
-                            onClick={() => handleUpdateStatus(appointment.id, "cancelled")}
+                            onClick={() => handleUpdateStatus(appointment._id, "cancelled")}
                           >
                             Cancel
                           </Button>
@@ -447,6 +392,7 @@ const DoctorAppointments = () => {
                   )}
                 </TabsContent>
                 
+                {/* Completed appointments tab */}
                 <TabsContent value="completed" className="space-y-4 mt-4">
                   {completedAppointments.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
@@ -455,7 +401,7 @@ const DoctorAppointments = () => {
                   ) : (
                     completedAppointments.map((appointment) => (
                       <div 
-                        key={appointment.id} 
+                        key={appointment._id} 
                         className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
                       >
                         <div className="flex gap-4 items-start">
@@ -463,10 +409,10 @@ const DoctorAppointments = () => {
                             <CheckCircle className="h-5 w-5 text-green-600" />
                           </div>
                           <div>
-                            <h3 className="font-medium">{appointment.patient}</h3>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
                             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                              {appointment.patientAge && <span>Age: {appointment.patientAge}</span>}
-                              {appointment.patientGender && <span>• Gender: {appointment.patientGender}</span>}
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -475,6 +421,9 @@ const DoctorAppointments = () => {
                               </span>
                               <Clock className="h-3 w-3 text-muted-foreground ml-2" />
                               <span className="text-sm">{appointment.time}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+                                Completed
+                              </span>
                             </div>
                             {appointment.reason && (
                               <p className="text-sm mt-2">
@@ -487,14 +436,9 @@ const DoctorAppointments = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
                           >
                             View Patient
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                          >
-                            Create New Appointment
                           </Button>
                         </div>
                       </div>
@@ -502,6 +446,7 @@ const DoctorAppointments = () => {
                   )}
                 </TabsContent>
                 
+                {/* Cancelled appointments tab */}
                 <TabsContent value="cancelled" className="space-y-4 mt-4">
                   {cancelledAppointments.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
@@ -510,7 +455,7 @@ const DoctorAppointments = () => {
                   ) : (
                     cancelledAppointments.map((appointment) => (
                       <div 
-                        key={appointment.id} 
+                        key={appointment._id} 
                         className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border rounded-lg"
                       >
                         <div className="flex gap-4 items-start">
@@ -518,10 +463,10 @@ const DoctorAppointments = () => {
                             <X className="h-5 w-5 text-red-600" />
                           </div>
                           <div>
-                            <h3 className="font-medium">{appointment.patient}</h3>
+                            <h3 className="font-medium">{appointment.patient.name}</h3>
                             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                              {appointment.patientAge && <span>Age: {appointment.patientAge}</span>}
-                              {appointment.patientGender && <span>• Gender: {appointment.patientGender}</span>}
+                              {appointment.patient.age && <span>Age: {appointment.patient.age}</span>}
+                              {appointment.patient.gender && <span>• Gender: {appointment.patient.gender}</span>}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -530,6 +475,9 @@ const DoctorAppointments = () => {
                               </span>
                               <Clock className="h-3 w-3 text-muted-foreground ml-2" />
                               <span className="text-sm">{appointment.time}</span>
+                              <span className="ml-2 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800">
+                                Cancelled
+                              </span>
                             </div>
                             {appointment.reason && (
                               <p className="text-sm mt-2">
@@ -542,14 +490,9 @@ const DoctorAppointments = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
+                            onClick={() => navigate(`/doctor/patients/${appointment.patient._id}`)}
                           >
                             View Patient
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                          >
-                            Create New Appointment
                           </Button>
                         </div>
                       </div>

@@ -181,3 +181,11 @@ const DashboardLayout = ({ children, userRole }: DashboardLayoutProps) => {
 };
 
 export default DashboardLayout;
+
+// Update the doctor sidebar links to include the profile link
+// Look for the section that defines the doctor sidebar links and add:
+const doctorLinks = [
+  { href: "/doctor/dashboard", label: "Dashboard", icon: <Home className="h-4 w-4" /> },
+  { href: "/doctor/appointments", label: "Appointments", icon: <Calendar className="h-4 w-4" /> },
+  { href: "/doctor/profile", label: "My Profile", icon: <User className="h-4 w-4" /> },
+];

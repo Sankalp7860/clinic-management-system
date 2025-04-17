@@ -26,7 +26,7 @@ app.use(express.json());
 
 // Update CORS configuration
 app.use(cors({
-  origin: 'http://localhost:8081', // or whatever port your frontend is running on
+  origin: 'http://localhost:8080', // or whatever port your frontend is running on
   credentials: true
 }));
 

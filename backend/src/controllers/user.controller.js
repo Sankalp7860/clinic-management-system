@@ -119,7 +119,55 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Add to existing controller
+// @desc    Get verified doctors
+// @route   GET /api/users/doctors/verified
+// @access  Private
+exports.getVerifiedDoctors = async (req, res) => {
+  try {
+    const doctors = await User.find({ 
+      role: 'doctor',
+      isVerified: true 
+    });
+
+    res.status(200).json({
+      success: true,
+      count: doctors.length,
+      data: doctors
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get unverified doctors
+// @route   GET /api/users/doctors/unverified
+// @access  Private/Admin
+exports.getUnverifiedDoctors = async (req, res) => {
+  try {
+    const doctors = await User.find({ 
+      role: 'doctor',
+      isVerified: false 
+    });
+
+    res.status(200).json({
+      success: true,
+      count: doctors.length,
+      data: doctors
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Verify a doctor
+// @route   PUT /api/users/doctors/:id/verify
+// @access  Private/Admin
 exports.verifyDoctor = async (req, res) => {
   try {
     const doctor = await User.findById(req.params.id);
@@ -127,14 +175,14 @@ exports.verifyDoctor = async (req, res) => {
     if (!doctor) {
       return res.status(404).json({
         success: false,
-        message: 'Doctor not found'
+        message: `No doctor found with id ${req.params.id}`
       });
     }
 
     if (doctor.role !== 'doctor') {
       return res.status(400).json({
         success: false,
-        message: 'User is not a doctor'
+        message: 'This user is not a doctor'
       });
     }
 
@@ -153,14 +201,26 @@ exports.verifyDoctor = async (req, res) => {
   }
 };
 
-exports.getUnverifiedDoctors = async (req, res) => {
+// @desc    Delete user
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+exports.deleteUser = async (req, res) => {
   try {
-    const doctors = await User.find({ role: 'doctor', isVerified: false });
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: `No user found with id ${req.params.id}`
+      });
+    }
+
+    // Delete the user
+    await User.deleteOne({ _id: req.params.id });
 
     res.status(200).json({
       success: true,
-      count: doctors.length,
-      data: doctors
+      data: {}
     });
   } catch (error) {
     res.status(500).json({

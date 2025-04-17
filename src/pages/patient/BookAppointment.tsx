@@ -51,8 +51,8 @@ const BookAppointment = () => {
           return;
         }
 
-        // Fetch doctors
-        const response = await UserService.getDoctors();
+        // Fetch verified doctors only
+        const response = await UserService.getVerifiedDoctors();
         setDoctors(response.data);
         setLoading(false);
       } catch (error) {
