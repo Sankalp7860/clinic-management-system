@@ -1,10 +1,9 @@
-
 import { useState, ReactNode } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "@/components/ui/sonner";
-import { Hospital, Menu, LogOut, User, Calendar, Users, ChevronRight, Home, Settings } from "lucide-react";
+import { Hospital, Menu, LogOut, User, Calendar, Users, ChevronRight, Home, Settings, Package } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -35,6 +34,7 @@ const DashboardLayout = ({ children, userRole }: DashboardLayoutProps) => {
         return [
           { title: "Dashboard", href: "/doctor/dashboard", icon: <Home size={20} /> },
           { title: "Appointments", href: "/doctor/appointments", icon: <Calendar size={20} /> },
+          { title: "Utility Requests", href: "/doctor/utility-requests", icon: <Package size={20} /> },
           { title: "Profile", href: "/doctor/profile", icon: <User size={20} /> },
         ];
       case "admin":
@@ -42,6 +42,7 @@ const DashboardLayout = ({ children, userRole }: DashboardLayoutProps) => {
           { title: "Dashboard", href: "/admin/dashboard", icon: <Home size={20} /> },
           { title: "Verify Doctors", href: "/admin/verify-doctors", icon: <Users size={20} /> },
           { title: "Manage Patients", href: "/admin/patients", icon: <Users size={20} /> },
+          { title: "Utility Requests", href: "/admin/utility-requests", icon: <Package size={20} /> },
           { title: "Settings", href: "/admin/settings", icon: <Settings size={20} /> },
         ];
       default:
@@ -51,6 +52,7 @@ const DashboardLayout = ({ children, userRole }: DashboardLayoutProps) => {
 
   const navItems = getNavItems();
 
+  // Rest of the component remains unchanged
   const getRoleTitle = (): string => {
     switch (userRole) {
       case "patient":
@@ -181,11 +183,3 @@ const DashboardLayout = ({ children, userRole }: DashboardLayoutProps) => {
 };
 
 export default DashboardLayout;
-
-// Update the doctor sidebar links to include the profile link
-// Look for the section that defines the doctor sidebar links and add:
-const doctorLinks = [
-  { href: "/doctor/dashboard", label: "Dashboard", icon: <Home className="h-4 w-4" /> },
-  { href: "/doctor/appointments", label: "Appointments", icon: <Calendar className="h-4 w-4" /> },
-  { href: "/doctor/profile", label: "My Profile", icon: <User className="h-4 w-4" /> },
-];

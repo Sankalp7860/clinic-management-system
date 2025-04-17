@@ -18,6 +18,7 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const medicalRecordRoutes = require('./routes/medicalRecord.routes');
+const utilityRequestRoutes = require('./routes/utilityRequest.routes');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/medical-records', medicalRecordRoutes);
+app.use('/api/utility-requests', utilityRequestRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

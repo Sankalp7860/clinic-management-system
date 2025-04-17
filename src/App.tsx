@@ -19,6 +19,8 @@ import Profile from "@/pages/patient/Profile";
 import Appointments from "@/pages/patient/Appointments";
 import DoctorAppointments from "./pages/doctor/AppointmentsList";
 import DoctorProfile from "@/pages/doctor/Profile";
+import DoctorUtilityRequests from "@/pages/doctor/UtilityRequests";
+import AdminUtilityRequestManagement from "@/pages/admin/UtilityRequestManagement";
 
 // Protected route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -108,12 +110,30 @@ function App() {
 					}
 				/>
 
+				<Route
+					path="/doctor/utility-requests"
+					element={
+						<ProtectedRoute allowedRoles={["doctor"]}>
+							<DoctorUtilityRequests />
+						</ProtectedRoute>
+					}
+				/>
+
 				{/* Admin routes */}
 				<Route
 					path="/admin/dashboard"
 					element={
 						<ProtectedRoute allowedRoles={["admin"]}>
 							<AdminDashboard />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/admin/utility-requests"
+					element={
+						<ProtectedRoute allowedRoles={["admin"]}>
+							<AdminUtilityRequestManagement />
 						</ProtectedRoute>
 					}
 				/>
