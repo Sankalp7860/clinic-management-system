@@ -11,6 +11,8 @@ import BookAppointment from "@/pages/patient/BookAppointment";
 import DoctorDashboard from "@/pages/doctor/Dashboard";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AuthService from "@/services/auth.service";
+import Profile from "@/pages/patient/Profile";
+import Appointments from "@/pages/patient/Appointments";
 
 // Protected route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -50,6 +52,24 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["patient"]}>
               <BookAppointment />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Patient routes */}
+        <Route 
+          path="/patient/profile" 
+          element={
+            <ProtectedRoute allowedRoles={["patient"]}>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/patient/appointments" 
+          element={
+            <ProtectedRoute allowedRoles={["patient"]}>
+              <Appointments />
             </ProtectedRoute>
           } 
         />
